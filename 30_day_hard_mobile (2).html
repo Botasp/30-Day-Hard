@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<title>30 Day Hard – Fekri Mohammed</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f3ef; color: #1a1a1a; padding: 12px 12px 80px; }
+  .wrap { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Sticky progress bar at top */
+  .sticky-prog {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(244,243,239,0.95); backdrop-filter: blur(10px);
+    padding: 10px 16px 8px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sticky-title { font-size: 13px; font-weight: 600; color: #111; white-space: nowrap; }
+  .sticky-track { flex: 1; height: 5px; background: #e0ded6; border-radius: 99px; overflow: hidden; }
+  .sticky-fill { height: 100%; background: #1D9E75; border-radius: 99px; transition: width 0.4s; }
+  .sticky-count { font-size: 12px; color: #888; white-space: nowrap; }
+  .top-spacer { height: 42px; }
+
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 14px; padding: 16px; }
+  .lbl { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+  .title-txt { font-size: 22px; font-weight: 700; color: #111; }
+  .divider { border: none; border-top: 0.5px solid rgba(0,0,0,0.1); margin: 12px 0; }
+  .date-row { display: flex; gap: 10px; }
+  .date-field { flex: 1; }
+  .field-lbl { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .field-val { font-size: 15px; font-weight: 500; color: #111; border: none; border-bottom: 0.5px solid rgba(0,0,0,0.15); outline: none; background: transparent; width: 100%; padding: 5px 0; }
+  .field-val::placeholder { color: #bbb; font-weight: 400; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sec-title { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+  .rule-list { display: flex; flex-direction: column; gap: 8px; }
+  .rule-item { display: flex; align-items: flex-start; gap: 7px; }
+  .rule-num { font-size: 10px; font-weight: 600; color: #aaa; min-width: 16px; padding-top: 5px; }
+  .rule-in { font-size: 14px; color: #111; border: none; border-bottom: 0.5px solid rgba(0,0,0,0.1); outline: none; background: transparent; width: 100%; padding: 4px 0; }
+  .rule-in::placeholder { color: #bbb; }
+  .add-btn { font-size: 12px; color: #888; background: none; border: none; cursor: pointer; padding: 10px 0 0; display: flex; align-items: center; gap: 4px; }
+  .notes-ta { width: 100%; min-height: 70px; font-size: 14px; color: #111; border: none; outline: none; background: transparent; resize: none; font-family: inherit; line-height: 1.6; }
+  .notes-ta::placeholder { color: #bbb; }
+
+  .tracker-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 14px; padding: 16px; }
+  .prog-track { height: 7px; background: #f0efe9; border-radius: 99px; overflow: hidden; margin: 10px 0 5px; }
+  .prog-fill { height: 100%; background: #1D9E75; border-radius: 99px; transition: width 0.4s; }
+  .prog-lbl { font-size: 12px; color: #888; margin-bottom: 14px; }
+  .reset-btn { font-size: 10px; color: #888; background: none; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #888; }
+  .legend-dot { width: 11px; height: 11px; border-radius: 3px; }
+
+  .days-list { display: flex; flex-direction: column; gap: 6px; }
+  .day-row { border: 0.5px solid rgba(0,0,0,0.1); border-radius: 11px; overflow: hidden; }
+  .day-header { display: flex; align-items: center; gap: 10px; padding: 12px 13px; cursor: pointer; background: #f9f8f5; user-select: none; min-height: 54px; }
+  .day-header:active { background: #eeece4; }
+  .day-badge { width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 0.5px solid rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #888; flex-shrink: 0; }
+  .day-row.done .day-badge { background: #E1F5EE; border-color: #5DCAA5; color: #0F6E56; }
+  .day-row.skipped .day-badge { background: #FCEBEB; border-color: #F09595; color: #A32D2D; }
+  .day-label { font-size: 14px; font-weight: 500; color: #111; flex: 1; }
+  .day-status { font-size: 10px; color: #bbb; }
+  .day-row.done .day-status { color: #0F6E56; }
+  .day-row.skipped .day-status { color: #A32D2D; }
+  .tog-wrap { display: flex; gap: 5px; }
+  .tog { font-size: 12px; padding: 7px 11px; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 9px; background: #fff; color: #888; cursor: pointer; white-space: nowrap; min-height: 34px; min-width: 58px; display: flex; align-items: center; justify-content: center; }
+  .tog:active { opacity: 0.7; }
+  .tog.active-done { background: #E1F5EE; color: #0F6E56; border-color: #5DCAA5; }
+  .tog.active-skip { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+  .chev { font-size: 13px; color: #bbb; transition: transform 0.2s; display: inline-block; margin-left: 4px; }
+  .day-row.open .chev { transform: rotate(180deg); }
+
+  .day-body { display: none; padding: 14px; border-top: 0.5px solid rgba(0,0,0,0.08); background: #fff; }
+  .day-row.open .day-body { display: block; }
+  .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sub-lbl { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; }
+  .day-ta { width: 100%; min-height: 75px; font-size: 13px; color: #111; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 9px; outline: none; background: #f9f8f5; resize: none; font-family: inherit; line-height: 1.6; padding: 9px; }
+  .day-ta::placeholder { color: #bbb; }
+  .ach-list { display: flex; flex-direction: column; gap: 6px; }
+  .ach-item { display: flex; align-items: center; gap: 7px; }
+  .ach-cb { width: 18px; height: 18px; flex-shrink: 0; accent-color: #1D9E75; cursor: pointer; }
+  .ach-in { font-size: 13px; color: #111; border: none; border-bottom: 0.5px solid rgba(0,0,0,0.1); outline: none; background: transparent; width: 100%; padding: 3px 0; }
+  .ach-in::placeholder { color: #bbb; }
+  .ach-in.checked { text-decoration: line-through; color: #bbb; }
+  .add-ach { font-size: 11px; color: #888; background: none; border: none; cursor: pointer; padding: 7px 0 0; display: flex; align-items: center; gap: 3px; }
+  .mood-row { display: flex; gap: 7px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .mood-lbl { font-size: 11px; color: #888; }
+  .mood-btn { font-size: 22px; background: none; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 9px; padding: 5px 8px; cursor: pointer; opacity: 0.4; min-height: 40px; min-width: 42px; display: flex; align-items: center; justify-content: center; }
+  .mood-btn:active { opacity: 0.7; }
+  .mood-btn.selected { opacity: 1; border-color: rgba(0,0,0,0.2); background: #f4f3ef; }
+
+  /* Save indicator */
+  .save-badge {
+    position: fixed; bottom: 16px; right: 16px; z-index: 200;
+    background: #1D9E75; color: #fff;
+    font-size: 11px; font-weight: 500;
+    padding: 6px 12px; border-radius: 99px;
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .save-badge.show { opacity: 1; }
+
+  @media (max-width: 420px) {
+    .two-col { grid-template-columns: 1fr; }
+    .body-grid { grid-template-columns: 1fr; }
+    .date-row { flex-wrap: wrap; gap: 10px; }
+    .date-field { min-width: calc(50% - 5px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sticky progress -->
+<div class="sticky-prog">
+  <div class="sticky-title">30 Day Hard</div>
+  <div class="sticky-track"><div class="sticky-fill" id="sticky-fill" style="width:0%"></div></div>
+  <div class="sticky-count" id="sticky-count">0/30</div>
+</div>
+<div class="top-spacer"></div>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="lbl">Challenge name</div>
+    <div class="title-txt">30 Day Hard</div>
+    <hr class="divider" />
+    <div class="date-row">
+      <div class="date-field">
+        <div class="field-lbl">Start date</div>
+        <input class="field-val" type="text" value="6 / 16 / 2026" />
+      </div>
+      <div class="date-field">
+        <div class="field-lbl">End date</div>
+        <input class="field-val" type="text" value="7 / 16 / 2026" />
+      </div>
+      <div class="date-field">
+        <div class="field-lbl">Your name</div>
+        <input class="field-val" type="text" value="Fekri Mohammed" />
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="sec-title">✓ Rules</div>
+      <div class="rule-list" id="rules-list">
+        <div class="rule-item"><span class="rule-num">1.</span><input class="rule-in" type="text" value="No Nicotine" /></div>
+        <div class="rule-item"><span class="rule-num">2.</span><input class="rule-in" type="text" value="No going above 2200 Cals" /></div>
+        <div class="rule-item"><span class="rule-num">3.</span><input class="rule-in" type="text" value="No porn" /></div>
+        <div class="rule-item"><span class="rule-num">4.</span><input class="rule-in" type="text" value="Be consistent every single day" /></div>
+        <div class="rule-item"><span class="rule-num">5.</span><input class="rule-in" type="text" value="1 rest day per week" /></div>
+      </div>
+      <button class="add-btn" id="add-rule">+ Add rule</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">★ Goal & reward</div>
+      <div style="margin-bottom:12px;">
+        <div class="field-lbl" style="margin-bottom:5px;">My goal</div>
+        <textarea class="notes-ta" placeholder="What do you want to achieve?" style="min-height:52px;"></textarea>
+      </div>
+      <div>
+        <div class="field-lbl" style="margin-bottom:5px;">Reward if I complete it</div>
+        <input class="field-val" type="text" placeholder="Treat yourself..." />
+      </div>
+    </div>
+  </div>
+
+  <div class="tracker-card">
+    <div class="sec-title" style="justify-content:space-between; margin-bottom:0;">
+      <span>📅 Daily tracker</span>
+      <button class="reset-btn" id="reset-all">Reset all</button>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-lbl" id="prog-lbl">0 / 30 days completed</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E1F5EE;border:0.5px solid #5DCAA5;"></div>Completed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FCEBEB;border:0.5px solid #F09595;"></div>Skipped</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f9f8f5;border:0.5px solid rgba(0,0,0,0.1);"></div>Upcoming</div>
+    </div>
+    <div class="days-list" id="days-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">📋 Notes</div>
+    <textarea class="notes-ta" placeholder="Write anything here — reflections, progress, how you feel, observations..."></textarea>
+  </div>
+
+</div>
+
+<div class="save-badge" id="save-badge">Saved ✓</div>
+
+<script>
+  var states = Array(30).fill(0);
+  var list = document.getElementById('days-list');
+  var fillEl = document.getElementById('prog-fill');
+  var stickyFill = document.getElementById('sticky-fill');
+  var lblEl = document.getElementById('prog-lbl');
+  var stickyCount = document.getElementById('sticky-count');
+  var moods = ['😴','😐','🙂','😄','🔥'];
+  var saveBadge = document.getElementById('save-badge');
+  var saveTimer;
+
+  function updateProgress() {
+    var done = states.filter(function(s){ return s===1; }).length;
+    var pct = Math.round((done/30)*100) + '%';
+    fillEl.style.width = pct;
+    stickyFill.style.width = pct;
+    lblEl.textContent = done + ' / 30 days completed';
+    stickyCount.textContent = done + '/30';
+  }
+
+  function flashSave() {
+    clearTimeout(saveTimer);
+    saveBadge.classList.add('show');
+    saveTimer = setTimeout(function(){ saveBadge.classList.remove('show'); }, 1200);
+  }
+
+  function buildAchItem(container) {
+    var item = document.createElement('div');
+    item.className = 'ach-item';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'ach-cb';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'ach-in';
+    inp.placeholder = 'Add something achieved...';
+    cb.addEventListener('change', function(){ inp.classList.toggle('checked', cb.checked); });
+    item.appendChild(cb);
+    item.appendChild(inp);
+    container.appendChild(item);
+  }
+
+  for (var i = 0; i < 30; i++) {
+    (function(idx) {
+      var row = document.createElement('div');
+      row.className = 'day-row';
+
+      var header = document.createElement('div');
+      header.className = 'day-header';
+
+      var badge = document.createElement('div');
+      badge.className = 'day-badge';
+      badge.textContent = idx + 1;
+
+      var dayLbl = document.createElement('div');
+      dayLbl.className = 'day-label';
+      dayLbl.textContent = 'Day ' + (idx + 1);
+
+      var statusTxt = document.createElement('div');
+      statusTxt.className = 'day-status';
+      statusTxt.textContent = 'Not started';
+
+      var togWrap = document.createElement('div');
+      togWrap.className = 'tog-wrap';
+
+      var doneBtn = document.createElement('button');
+      doneBtn.className = 'tog';
+      doneBtn.textContent = '✓ Done';
+
+      var skipBtn = document.createElement('button');
+      skipBtn.className = 'tog';
+      skipBtn.textContent = '× Skip';
+
+      var chev = document.createElement('span');
+      chev.className = 'chev';
+      chev.textContent = '▾';
+
+      togWrap.appendChild(doneBtn);
+      togWrap.appendChild(skipBtn);
+      header.appendChild(badge);
+      header.appendChild(dayLbl);
+      header.appendChild(statusTxt);
+      header.appendChild(togWrap);
+      header.appendChild(chev);
+
+      var body = document.createElement('div');
+      body.className = 'day-body';
+
+      var grid = document.createElement('div');
+      grid.className = 'body-grid';
+
+      var notesDiv = document.createElement('div');
+      var notesLbl = document.createElement('div');
+      notesLbl.className = 'sub-lbl';
+      notesLbl.textContent = '✏ Notes for this day';
+      var ta = document.createElement('textarea');
+      ta.className = 'day-ta';
+      ta.placeholder = 'How did it go? Any thoughts...';
+      notesDiv.appendChild(notesLbl);
+      notesDiv.appendChild(ta);
+
+      var achDiv = document.createElement('div');
+      var achLbl = document.createElement('div');
+      achLbl.className = 'sub-lbl';
+      achLbl.textContent = '★ Things achieved';
+      var achList = document.createElement('div');
+      achList.className = 'ach-list';
+      buildAchItem(achList);
+      buildAchItem(achList);
+      var addAchBtn = document.createElement('button');
+      addAchBtn.className = 'add-ach';
+      addAchBtn.textContent = '+ Add';
+      addAchBtn.addEventListener('click', function(){ buildAchItem(achList); });
+      achDiv.appendChild(achLbl);
+      achDiv.appendChild(achList);
+      achDiv.appendChild(addAchBtn);
+
+      grid.appendChild(notesDiv);
+      grid.appendChild(achDiv);
+
+      var moodRow = document.createElement('div');
+      moodRow.className = 'mood-row';
+      var moodLbl = document.createElement('span');
+      moodLbl.className = 'mood-lbl';
+      moodLbl.textContent = 'Mood:';
+      moodRow.appendChild(moodLbl);
+      moods.forEach(function(m) {
+        var mb = document.createElement('button');
+        mb.className = 'mood-btn';
+        mb.textContent = m;
+        mb.addEventListener('click', function() {
+          moodRow.querySelectorAll('.mood-btn').forEach(function(b){ b.classList.remove('selected'); });
+          mb.classList.add('selected');
+          saveData();
+        });
+        moodRow.appendChild(mb);
+      });
+
+      body.appendChild(grid);
+      body.appendChild(moodRow);
+      row.appendChild(header);
+      row.appendChild(body);
+      list.appendChild(row);
+
+      function setStatus(s) {
+        states[idx] = s;
+        row.classList.remove('done','skipped');
+        doneBtn.classList.remove('active-done');
+        skipBtn.classList.remove('active-skip');
+        if (s === 1) { row.classList.add('done'); doneBtn.classList.add('active-done'); statusTxt.textContent = 'Completed'; }
+        else if (s === 2) { row.classList.add('skipped'); skipBtn.classList.add('active-skip'); statusTxt.textContent = 'Skipped'; }
+        else { statusTxt.textContent = 'Not started'; }
+        updateProgress();
+        saveData();
+      }
+
+      doneBtn.addEventListener('click', function(e){ e.stopPropagation(); setStatus(states[idx]===1?0:1); });
+      skipBtn.addEventListener('click', function(e){ e.stopPropagation(); setStatus(states[idx]===2?0:2); });
+      header.addEventListener('click', function(){ row.classList.toggle('open'); });
+    })(i);
+  }
+
+  document.getElementById('reset-all').addEventListener('click', function() {
+    if (!confirm('Reset all 30 days?')) return;
+    for (var i = 0; i < 30; i++) states[i] = 0;
+    document.querySelectorAll('.day-row').forEach(function(r){ r.classList.remove('done','skipped','open'); });
+    document.querySelectorAll('.day-status').forEach(function(s){ s.textContent = 'Not started'; });
+    document.querySelectorAll('.tog').forEach(function(t){ t.classList.remove('active-done','active-skip'); });
+    updateProgress();
+    saveData();
+  });
+
+  var ruleCount = 5;
+  document.getElementById('add-rule').addEventListener('click', function() {
+    if (ruleCount >= 10) return;
+    ruleCount++;
+    var rlist = document.getElementById('rules-list');
+    var item = document.createElement('div');
+    item.className = 'rule-item';
+    item.innerHTML = '<span class="rule-num">' + ruleCount + '.</span><input class="rule-in" type="text" placeholder="Write a rule..." />';
+    rlist.appendChild(item);
+  });
+
+  // Auto-save
+  function saveData() {
+    try {
+      var data = {
+        states: states.slice(),
+        values: Array.from(document.querySelectorAll('input:not([type="checkbox"]), textarea')).map(function(e){ return e.value; }),
+        checks: Array.from(document.querySelectorAll('input[type="checkbox"]')).map(function(e){ return e.checked; }),
+        moods: Array.from(document.querySelectorAll('.mood-btn.selected')).map(function(b){
+          var moodRow = b.closest('.mood-row');
+          var dayBody = moodRow ? moodRow.closest('.day-body') : null;
+          var dayRow = dayBody ? dayBody.closest('.day-row') : null;
+          var dayRows = Array.from(document.querySelectorAll('.day-row'));
+          return dayRow ? dayRows.indexOf(dayRow) : -1;
+        }),
+        moodVals: Array.from(document.querySelectorAll('.mood-btn.selected')).map(function(b){ return b.textContent; })
+      };
+      localStorage.setItem('30DayHardFekri', JSON.stringify(data));
+      flashSave();
+    } catch(e) {}
+  }
+
+  function loadData() {
+    try {
+      var saved = localStorage.getItem('30DayHardFekri');
+      if (!saved) return;
+      var data = JSON.parse(saved);
+
+      if (data.states) {
+        document.querySelectorAll('.day-row').forEach(function(row, i) {
+          if (data.states[i] === 1) {
+            states[i] = 1;
+            row.classList.add('done');
+            row.querySelector('.day-status').textContent = 'Completed';
+            row.querySelectorAll('.tog')[0].classList.add('active-done');
+          }
+          if (data.states[i] === 2) {
+            states[i] = 2;
+            row.classList.add('skipped');
+            row.querySelector('.day-status').textContent = 'Skipped';
+            row.querySelectorAll('.tog')[1].classList.add('active-skip');
+          }
+        });
+        updateProgress();
+      }
+
+      var fields = document.querySelectorAll('input:not([type="checkbox"]), textarea');
+      if (data.values) data.values.forEach(function(v,i){ if(fields[i]) fields[i].value = v; });
+
+      var checks = document.querySelectorAll('input[type="checkbox"]');
+      if (data.checks) data.checks.forEach(function(v,i){ if(checks[i]) checks[i].checked = v; });
+
+      // Restore moods
+      if (data.moods && data.moodVals) {
+        var dayRows = Array.from(document.querySelectorAll('.day-row'));
+        data.moods.forEach(function(dayIdx, j) {
+          if (dayIdx < 0 || !dayRows[dayIdx]) return;
+          var moodVal = data.moodVals[j];
+          dayRows[dayIdx].querySelectorAll('.mood-btn').forEach(function(mb){
+            if (mb.textContent === moodVal) mb.classList.add('selected');
+          });
+        });
+      }
+    } catch(e) {}
+  }
+
+  document.addEventListener('input', saveData);
+  document.addEventListener('change', saveData);
+
+  setTimeout(loadData, 300);
+</script>
+</body>
+</html>
